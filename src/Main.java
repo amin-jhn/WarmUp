@@ -4,8 +4,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class Main extends JFrame {
     private boolean gameTYPE; //True means PvE
@@ -40,9 +39,18 @@ public class Main extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(checkSize()){
-
+                    GameBoard gameBoard = new GameBoard(gameWidth, gameHeight, gameTYPE);
+                    Game game = new Game(gameBoard);
+                    setVisible(false);
+                    game.addWindowListener(new WindowAdapter() {
+                        @Override
+                        public void windowClosed(WindowEvent e) {
+                            setVisible(true);
+                        }
+                    });
                 } else {
-                    JOptionPane.showMessageDialog(me,"Enter number between 3 and 10!",
+                    JOptionPane.showMessageDialog(me,
+                            "Enter number between 3 and 10!",
                             "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
