@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.text.StyledEditorKit;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -10,6 +11,8 @@ public class Game extends JFrame {
     private int cellSize;
     private int margin;
     private int currentX = -1, currentY = -1, oldCurrentY = -1, oldCurrentX = -1;
+    private Font defaultFont = new Font("tahoma", Font.BOLD,40);
+
 
     public Game(GameBoard board) {
         this.board = board;
@@ -36,6 +39,9 @@ public class Game extends JFrame {
 
                     tempX = (e.getY() - margin) / cellSize;
                     tempY = (e.getX() - margin) / cellSize;
+                    if (board.getState(tempX, tempY) != null) {
+                        tempX = tempY = -1;
+                    }
             }
                 if (tempX != currentX || tempY != currentY) {
                     oldCurrentX = currentX;
@@ -60,31 +66,55 @@ public class Game extends JFrame {
 
     private void play() {
         String[] options = new String[]{"S" , "O"};
+        setEnabled(false);
         int answer = JOptionPane.showOptionDialog(this, "What you need?", board.getTurn() ? "Blue" : "Red",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (answer != -1)
 
         board.play(answer==0 , currentX, currentY);
+        wasPlayed = true;
+        repaint();
+        setEnabled(true);
+        requestFocus();
     }
+
+    boolean wasPlayed = false;
+    boolean firstPaint = true;
     @Override
     public void paint (Graphics g) {
-        g.setColor(Color.YELLOW);
-        if (currentX != -1)
-            g.fillRect(rectangles[currentX][currentY].x, rectangles[currentX][currentY].y,
-                    rectangles[currentX][currentY].width, rectangles[currentX][currentY].height);
-
-        g.setColor(Color.WHITE);
-        if (oldCurrentX != -1)
-            g.fillRect(rectangles[oldCurrentX][oldCurrentY].x, rectangles[oldCurrentX][oldCurrentY].y,
-                    rectangles[oldCurrentX][oldCurrentY].width, rectangles[oldCurrentX][oldCurrentY].height);
-        g.setColor(Color.BLACK);
-
-        ((Graphics2D) g).setStroke(new BasicStroke(4));
-        for (int i = 0; i < board.getBoardHeight(); i++) {
-            for (int j = 0; j < board.getBoardWidth(); j++) {
-                g.drawRect(rectangles[i][j].x, rectangles[i][j].y, rectangles[i][j].width, rectangles[i][j].height);
+        if (firstPaint){
+            g.setColor(Color.BLACK);
+            ((Graphics2D) g).setStroke(new BasicStroke(4));
+            for (int i = 0; i < board.getBoardHeight(); i++) {
+                for (int j = 0; j < board.getBoardWidth(); j++) {
+                    g.drawRect(rectangles[i][j].x, rectangles[i][j].y, rectangles[i][j].width, rectangles[i][j].height);
+                }
             }
+            firstPaint = false;
         }
+        if (wasPlayed){
+            g.setColor(board.getTurn()? Color.RED : Color.blue);
+                g.fillRect(rectangles[currentX][currentY].x, rectangles[currentX][currentY].y,
+                        rectangles[currentX][currentY].width, rectangles[currentX][currentY].height);
+            g.setColor(board.getTurn()? Color.BLACK : Color.WHITE);
+            g.setFont(defaultFont);
+            g.drawString(board.getState(currentX, currentY) ? "S" : "O",
+                    rectangles[currentX][currentY].x + 21, rectangles[currentX][currentY].y + 50);
+            currentX = currentY = oldCurrentY = oldCurrentX = -1;
+            wasPlayed = false;
+
+        } else {
+            g.setColor(Color.YELLOW);
+            if (currentX != -1)
+                g.fillRect(rectangles[currentX][currentY].x + 2, rectangles[currentX][currentY].y + 2,
+                        rectangles[currentX][currentY].width - 4, rectangles[currentX][currentY].height - 4);
+
+            g.setColor(Color.WHITE);
+            if (oldCurrentX != -1)
+                g.fillRect(rectangles[oldCurrentX][oldCurrentY].x + 2, rectangles[oldCurrentX][oldCurrentY].y + 2,
+                        rectangles[oldCurrentX][oldCurrentY].width - 4, rectangles[oldCurrentX][oldCurrentY].height - 4);
+        }
+
     }
 
     private void initTable() {
