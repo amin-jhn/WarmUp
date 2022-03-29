@@ -5,6 +5,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class Main extends JFrame {
     private boolean gameTYPE; //True means PvE
@@ -46,6 +48,20 @@ public class Main extends JFrame {
                         @Override
                         public void windowClosed(WindowEvent e) {
                             setVisible(true);
+                        }
+                    });
+                    game.addPropertyChangeListener("Points", new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if ((int) evt.getNewValue() > (int) evt.getOldValue())
+                            JOptionPane.showMessageDialog(me, "Red Won!!" + " " + evt.getNewValue(),
+                                    "Winner", JOptionPane.PLAIN_MESSAGE);
+                            else if ((int) evt.getNewValue() < (int) evt.getOldValue())
+                            JOptionPane.showMessageDialog(me, "Blue Won!!" + " " + evt.getOldValue(),
+                                    "Winner", JOptionPane.PLAIN_MESSAGE);
+                            else
+                                JOptionPane.showMessageDialog(me, "Draw!!",
+                                        "Draw", JOptionPane.PLAIN_MESSAGE);
                         }
                     });
                 } else {

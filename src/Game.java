@@ -1,9 +1,7 @@
 import javax.swing.*;
 import javax.swing.text.StyledEditorKit;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 public class Game extends JFrame {
@@ -13,6 +11,7 @@ public class Game extends JFrame {
     private int margin;
     private int currentX = -1, currentY = -1, oldCurrentY = -1, oldCurrentX = -1;
     private Font defaultFont = new Font("tahoma", Font.BOLD,40);
+    private GamePoint gp;
 
 
     public Game(GameBoard board) {
@@ -25,7 +24,7 @@ public class Game extends JFrame {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         initTable();
         setResizable(false);
-
+        gp = new GamePoint();
         setVisible(true);
 
         addMouseMotionListener(new MouseAdapter() {
@@ -63,6 +62,12 @@ public class Game extends JFrame {
                 }
             }
         });
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                gp.dispose();
+            }
+        });
     }
 
     private void play() {
@@ -71,12 +76,23 @@ public class Game extends JFrame {
         int answer = JOptionPane.showOptionDialog(this, "What you need?", board.getTurn() ? "Blue" : "Red",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (answer != -1) {
-            lines.addAll(board.play(answer == 0, currentX, currentY));
+            ArrayList <int[]> temp = board.play(answer == 0, currentX, currentY);
+            if (temp == null) end();
+            else
+                lines.addAll(temp);
+            gp.setrPoint(board.getrPoint());
+            gp.setbPoint(board.getbPoint());
             wasPlayed = true;
             repaint();
+
         }
         setEnabled(true);
         requestFocus();
+    }
+
+    private void end() {
+        dispose();
+        firePropertyChange("Points",board.getbPoint(),board.getrPoint());
     }
 
     boolean wasPlayed = false;
