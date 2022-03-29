@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 
 public class Game extends JFrame {
     GameBoard board;
@@ -69,17 +70,19 @@ public class Game extends JFrame {
         setEnabled(false);
         int answer = JOptionPane.showOptionDialog(this, "What you need?", board.getTurn() ? "Blue" : "Red",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        if (answer != -1)
-
-        board.play(answer==0 , currentX, currentY);
-        wasPlayed = true;
-        repaint();
+        if (answer != -1) {
+            lines.addAll(board.play(answer == 0, currentX, currentY));
+            wasPlayed = true;
+            repaint();
+        }
         setEnabled(true);
         requestFocus();
     }
 
     boolean wasPlayed = false;
     boolean firstPaint = true;
+    ArrayList <int[]> lines = new ArrayList<>();
+
     @Override
     public void paint (Graphics g) {
         if (firstPaint){
@@ -93,13 +96,22 @@ public class Game extends JFrame {
             firstPaint = false;
         }
         if (wasPlayed){
-            g.setColor(board.getTurn()? Color.RED : Color.blue);
+            g.setColor(board.getTurn()? new Color(0xDA7070) : new Color(0x6161D7));
                 g.fillRect(rectangles[currentX][currentY].x, rectangles[currentX][currentY].y,
                         rectangles[currentX][currentY].width, rectangles[currentX][currentY].height);
             g.setColor(board.getTurn()? Color.BLACK : Color.WHITE);
             g.setFont(defaultFont);
             g.drawString(board.getState(currentX, currentY) ? "S" : "O",
                     rectangles[currentX][currentY].x + 21, rectangles[currentX][currentY].y + 50);
+            g.setColor(board.getTurn()? Color.RED : Color.blue);
+            ((Graphics2D) g).setStroke(new BasicStroke(4));
+            while (!lines.isEmpty()) {
+                int[] coor = lines.remove(0);
+                g.drawLine(rectangles[coor[0]][coor[1]].x + cellSize/2,
+                        rectangles[coor[0]][coor[1]].y + cellSize/2,
+                        rectangles[coor[2]][coor[3]].x + cellSize/2,
+                        rectangles[coor[2]][coor[3]].y + cellSize/2);
+            }
             currentX = currentY = oldCurrentY = oldCurrentX = -1;
             wasPlayed = false;
 
@@ -127,7 +139,7 @@ public class Game extends JFrame {
     }
 
     public static void main(String[] args) {
-        GameBoard gameBoard = new GameBoard(3, 3, true);
+        GameBoard gameBoard = new GameBoard(10, 10, true);
         Game game = new Game(gameBoard);
     }
 }
