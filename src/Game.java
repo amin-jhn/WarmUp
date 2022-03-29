@@ -9,13 +9,13 @@ public class Game extends JFrame {
     Rectangle[][] rectangles;
     private int cellSize;
     private int margin;
-    private Rectangle current, oldCurrent;
+    private int currentX = -1, currentY = -1, oldCurrentY = -1, oldCurrentX = -1;
 
     public Game(GameBoard board) {
         this.board = board;
         cellSize = 70;
         margin = 50;
-        setSize(800,800);
+        setSize(board.getBoardWidth() * cellSize + 2 * margin, board.getBoardHeight() * cellSize + 2 * margin);
         setLocationRelativeTo(null);
         setTitle("Game");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -27,32 +27,56 @@ public class Game extends JFrame {
         addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                Rectangle temp = null;
+                int tempX = -1;
+                int tempY = -1;
                 if (e.getX() >= margin &&
                         e.getY() >= margin &&
                         e.getX() <= cellSize * board.getBoardWidth() + cellSize &&
-                        e.getY() <= cellSize * board.getBoardHeight() + cellSize)
-                temp = rectangles[(e.getY()-margin)/cellSize][(e.getX()-margin)/cellSize];
+                        e.getY() <= cellSize * board.getBoardHeight() + cellSize) {
 
-                if (temp != current) {
-                    oldCurrent = current;
-                    current = temp;
+                    tempX = (e.getY() - margin) / cellSize;
+                    tempY = (e.getX() - margin) / cellSize;
+            }
+                if (tempX != currentX || tempY != currentY) {
+                    oldCurrentX = currentX;
+                    oldCurrentY = currentY;
+                    currentX = tempX;
+                    currentY = tempY;
                     repaint();
+                }
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (currentX != -1 && currentY != -1) {
+                    play();
+
                 }
             }
         });
     }
 
+    private void play() {
+        String[] options = new String[]{"S" , "O"};
+        int answer = JOptionPane.showOptionDialog(this, "What you need?", board.getTurn() ? "Blue" : "Red",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (answer != -1)
 
+        board.play(answer==0 , currentX, currentY);
+    }
     @Override
     public void paint (Graphics g) {
         g.setColor(Color.YELLOW);
-        if (current != null)
-            g.fillRect(current.x, current.y, current.width, current.height);
+        if (currentX != -1)
+            g.fillRect(rectangles[currentX][currentY].x, rectangles[currentX][currentY].y,
+                    rectangles[currentX][currentY].width, rectangles[currentX][currentY].height);
 
         g.setColor(Color.WHITE);
-        if (oldCurrent != null)
-            g.fillRect(oldCurrent.x, oldCurrent.y, oldCurrent.width, oldCurrent.height);
+        if (oldCurrentX != -1)
+            g.fillRect(rectangles[oldCurrentX][oldCurrentY].x, rectangles[oldCurrentX][oldCurrentY].y,
+                    rectangles[oldCurrentX][oldCurrentY].width, rectangles[oldCurrentX][oldCurrentY].height);
         g.setColor(Color.BLACK);
 
         ((Graphics2D) g).setStroke(new BasicStroke(4));
